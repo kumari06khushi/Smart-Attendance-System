@@ -1,0 +1,277 @@
+
+.add-student-page {
+  min-height: 100vh;
+  padding: 36px 24px;
+  background: #0E0E0E;
+  color: #FFFFFF;
+  font-family: "Poppins", sans-serif;
+}
+
+.add-student-layout {
+  display: grid;
+  grid-template-columns: 0.8fr 1.7fr;
+  max-width: 1120px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #373737;
+  border-radius: 18px;
+  background: #1A1D20;
+}
+
+.add-student-info {
+  padding: 38px 28px;
+  background: #172522;
+  border-right: 1px solid #294039;
+}
+
+.add-student-logo {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 28px;
+  border: 2px solid #3C665B;
+  border-radius: 25px;
+  background: #c5d5c6;
+  font-size: 26px;
+}
+
+.add-student-info h2 {
+  margin: 0 0 12px;
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.info-description,
+.info-feature p {
+  color: #B4B4B4;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.info-description {
+  margin: 0;
+}
+
+.info-divider {
+  height: 1px;
+  margin: 28px 0;
+  background: #375047;
+}
+
+.info-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-bottom: 25px;
+}
+
+.info-feature > span {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #24443D;
+  color: #00C0A8;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.info-feature h4 {
+  margin: 1px 0 5px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.info-feature p {
+  margin: 0;
+  font-size: 11px;
+}
+
+.add-student-form-panel {
+  padding: 35px 34px;
+  min-width: 0;
+}
+
+.form-heading {
+  margin-bottom: 27px;
+}
+
+.form-heading h1 {
+  margin: 0 0 8px;
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.form-heading p {
+  margin: 0;
+  color: #B4B4B4;
+  font-size: 12px;
+}
+
+.form-section-title {
+  margin: 0 0 17px;
+  padding-left: 11px;
+  border-left: 3px solid #00C0A8;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.academic-title {
+  margin-top: 28px;
+}
+
+.add-student-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 16px;
+}
+
+.add-student-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.add-student-field label {
+  color: #D5D5D5;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.add-student-field input,
+.add-student-field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 11px;
+  outline: none;
+  border: 1px solid #373737;
+  border-radius: 7px;
+  background: #0E0E0E;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.add-student-field input::placeholder {
+  color: #777777;
+}
+
+.add-student-field input:focus,
+.add-student-field select:focus {
+  border-color: #00C0A8;
+  box-shadow: 0 0 0 3px rgb(0 192 168 / 10%);
+}
+
+.add-student-field select {
+  cursor: pointer;
+}
+
+.add-student-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.add-student-actions button {
+  min-height: 35px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #00C0A8;
+  color: #0E0E0E;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.add-student-actions button:hover:not(:disabled) {
+  background: #00A991;
+  transform: translateY(-1px);
+}
+
+.add-student-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.add-student-success,
+.add-student-error {
+  margin: 18px 0 0;
+  padding: 11px 13px;
+  border-radius: 7px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.add-student-success {
+  border: 1px solid #226B57;
+  background: #142A23;
+  color: #69DDBB;
+}
+
+.add-student-error {
+  border: 1px solid #74342F;
+  background: #2A1918;
+  color: #FF8D83;
+}
+
+@media (max-width: 800px) {
+  .add-student-page {
+    padding: 22px 14px;
+  }
+
+  .add-student-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .add-student-info {
+    padding: 25px;
+    border-right: none;
+    border-bottom: 1px solid #294039;
+  }
+
+  .add-student-logo {
+    margin-bottom: 17px;
+  }
+
+  .info-divider {
+    margin: 20px 0;
+  }
+
+  .info-feature {
+    margin-bottom: 16px;
+  }
+
+  .info-feature:last-child {
+    margin-bottom: 0;
+  }
+
+  .add-student-form-panel {
+    padding: 27px 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-student-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .form-heading h1 {
+    font-size: 22px;
+  }
+
+  .add-student-form-panel {
+    padding: 24px 17px;
+  }
+}

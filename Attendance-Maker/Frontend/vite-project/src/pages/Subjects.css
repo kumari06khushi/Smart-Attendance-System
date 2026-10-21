@@ -1,0 +1,385 @@
+
+.subjects-page {
+  min-height: 100vh;
+  padding: 32px 24px;
+  background: #0E0E0E;
+  color: #FFFFFF;
+  font-family: "Poppins", sans-serif;
+}
+
+.subjects-header {
+  max-width: 1200px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.subjects-header h1 {
+  margin: 0 0 7px;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.subjects-header p,
+.subject-panel-heading p,
+.subject-list-heading p {
+  margin: 0;
+  color: #B4B4B4;
+  font-size: 12px;
+}
+
+.subjects-total {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 17px;
+  border: 1px solid #373737;
+  border-radius: 10px;
+  background: #1A1D20;
+}
+
+.total-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: #24443D;
+  color: #00C0A8;
+  font-size: 22px;
+}
+
+.subjects-total div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.subjects-total span:not(.total-icon) {
+  color: #B4B4B4;
+  font-size: 11px;
+}
+
+.subjects-total strong {
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.subjects-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.4fr);
+  gap: 22px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.subject-form-panel,
+.subject-list-panel {
+  min-width: 0;
+  padding: 25px;
+  border: 1px solid #373737;
+  border-radius: 14px;
+  background: #1A1D20;
+}
+
+.subject-panel-heading,
+.subject-list-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.subject-heading-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 43px;
+  height: 43px;
+  border-radius: 11px;
+  background: #24443D;
+  color: #00C0A8;
+  font-size: 25px;
+}
+
+.subject-panel-heading h2,
+.subject-list-heading h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.subject-panel-heading p,
+.subject-list-heading p {
+  line-height: 1.5;
+}
+
+.subject-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 19px;
+}
+
+.subject-field label {
+  color: #D5D5D5;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.subject-field input,
+.subject-field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #373737;
+  border-radius: 7px;
+  outline: none;
+  background: #0E0E0E;
+  color: #FFFFFF;
+  font-family: inherit;
+  font-size: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.subject-field input::placeholder {
+  color: #777777;
+}
+
+.subject-field input:focus,
+.subject-field select:focus {
+  border-color: #00C0A8;
+  box-shadow: 0 0 0 3px rgb(0 192 168 / 10%);
+}
+
+.subject-field select {
+  cursor: pointer;
+}
+
+.subject-submit-btn,
+.subject-refresh-btn {
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.subject-submit-btn {
+  width: 100%;
+  min-height: 39px;
+  margin-top: 4px;
+  padding: 10px 14px;
+  background: #00C0A8;
+  color: #0E0E0E;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.subject-submit-btn:hover:not(:disabled) {
+  background: #00A991;
+}
+
+.subject-submit-btn:disabled,
+.subject-refresh-btn:disabled,
+.subject-delete-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.subject-list-heading {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.subject-refresh-btn {
+  padding: 8px 11px;
+  border: 1px solid #373737;
+  background: #25292D;
+  color: #D5D5D5;
+}
+
+.subject-refresh-btn:hover:not(:disabled) {
+  background: #30363A;
+}
+
+.subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subject-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #373737;
+  border-radius: 10px;
+  background: #0E0E0E;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.subject-item:hover {
+  border-color: #42635C;
+  background: #151918;
+}
+
+.subject-item-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 39px;
+  height: 39px;
+  border-radius: 9px;
+  background: #24443D;
+  color: #00C0A8;
+  font-size: 19px;
+}
+
+.subject-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.subject-item-details h3 {
+  margin: 1px 0 5px;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.subject-code {
+  color: #00C0A8;
+  font-size: 11px;
+}
+
+.subject-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.subject-meta span {
+  padding: 5px 8px;
+  border: 1px solid #373737;
+  border-radius: 5px;
+  color: #B4B4B4;
+  font-size: 10px;
+}
+
+.subject-delete-btn {
+  flex-shrink: 0;
+  padding: 7px 9px;
+  border: 1px solid #74342F;
+  border-radius: 5px;
+  background: #2A1918;
+  color: #FF8D83;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.subject-delete-btn:hover:not(:disabled) {
+  background: #43211E;
+}
+
+.subject-empty-state {
+  padding: 50px 15px;
+  text-align: center;
+  color: #B4B4B4;
+  font-size: 12px;
+}
+
+.subject-empty-icon {
+  margin-bottom: 12px;
+  color: #00C0A8;
+  font-size: 35px;
+}
+
+.subject-empty-state h3 {
+  margin: 0 0 8px;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.subject-empty-state p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.subject-success,
+.subject-error {
+  margin: 0 0 16px;
+  padding: 11px 12px;
+  border-radius: 7px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.subject-success {
+  border: 1px solid #226B57;
+  background: #142A23;
+  color: #69DDBB;
+}
+
+.subject-error {
+  border: 1px solid #74342F;
+  background: #2A1918;
+  color: #FF8D83;
+}
+
+@media (max-width: 850px) {
+  .subjects-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .subject-form-panel {
+    max-width: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .subjects-page {
+    padding: 23px 14px;
+  }
+
+  .subjects-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .subjects-header h1 {
+    font-size: 22px;
+  }
+
+  .subject-form-panel,
+  .subject-list-panel {
+    padding: 18px;
+  }
+
+  .subject-item {
+    gap: 9px;
+    padding: 11px;
+  }
+
+  .subject-item-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .subject-delete-btn {
+    padding: 7px;
+  }
+}
