@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = "!A#tt***&sheet@75%$";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 function authenticateAdmin(req, res, next) {
 

@@ -10,6 +10,12 @@ const emailOTPSchema = new mongoose.Schema({
         index: true
     },
 
+    purpose: {
+    type: String,
+     enum: ["register", "reset"],
+      required: true
+      },
+
     otpHash: {
         type: String,
         required: true

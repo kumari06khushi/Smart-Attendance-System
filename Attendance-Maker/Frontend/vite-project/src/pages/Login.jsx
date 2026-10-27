@@ -69,6 +69,10 @@ return (
         Login
       </button>
 
+      <div className="forgot-password">
+  <Link to="/forgot-password">Forgot Password</Link>
+</div>
+
       {error && <p className="error-message">{error}</p>}
 
       <p className="auth-footer">

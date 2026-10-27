@@ -1,77 +1,82 @@
 
-const Admin = require ("../models/admin");
+const Admin = require("../models/admin");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
 const crypto = require("crypto");
 const EmailOTP = require("../models/EmailOTP");
 const { sendEmail } = require("../services/emailService");
 
-const JWT_SECRET = "!A#tt***&sheet@75%$";
+const JWT_SECRET = process.env.JWT_SECRET;
 
-//Registration
+// ==================== REGISTRATION ====================
 
-async function handleAdminRegister(req,res) {
-  console.log("UPDATED REGISTER CONTROLLER RUNNING");
+async function handleAdminRegister(req, res) {
     try {
-        const {name, email,password} = req.body;
+        const { name, email, password } = req.body;
 
-    if(!name || !email || !password){
-      return res.status(400).json({
-        error: "please fill all the required details..."
-      })
-    }
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                message: "Please fill all required details"
+            });
+        }
 
-//normalizedEmail
+        const normalizedEmail = email.trim().toLowerCase();
 
-    const normalizedEmail = email.trim().toLowerCase();
+        const existingAdmin = await Admin.findOne({
+            email: normalizedEmail
+        });
 
-const emailOTP = await EmailOTP.findOne({
-    email: normalizedEmail,
-    verified: true
-});
-
-if (!emailOTP || emailOTP.expiresAt.getTime() < Date.now()) {
-    return res.status(403).json({
-        message: "Please verify your email before registering"
-    });
-}
-
-    const existingAdmin = await Admin.findOne({ email: normalizedEmail});
-
-      if (existingAdmin) {
+        if (existingAdmin) {
             return res.status(409).json({
-                error: " This account is already exists."
+                message: "This account already exists"
+            });
+        }
+
+        const emailOTP = await EmailOTP.findOne({
+            email: normalizedEmail,
+            purpose: "register",
+            verified: true,
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!emailOTP) {
+            return res.status(403).json({
+                message: "Please verify your email before registering"
             });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newAdmin =  await Admin.create({name,
-             email: normalizedEmail,
-              password:hashedPassword});
+        const newAdmin = await Admin.create({
+            name,
+            email: normalizedEmail,
+            password: hashedPassword
+        });
 
-// ek bar otp s register hone k baad same otp k use nhi kr skte use delete kr dega
+        await EmailOTP.deleteOne({
+            _id: emailOTP._id,
+            purpose: "register"
+        });
 
-              await EmailOTP.deleteOne({ email: normalizedEmail });
-              newAdmin.password = undefined;
+        newAdmin.password = undefined;
 
+        return res.status(201).json({
+            message: "Registration successful",
+            newAdmin
+        });
 
-         return res.status(201).json({
-                message: "Registration succesfull.",newAdmin
-            }); 
-    } 
+    } catch (error) {
+        console.error("Registration error:", error);
 
-    catch (err) {
-         return res.status(500).json({
-            error: err.message,
-        }); 
+        return res.status(500).json({
+            message: "Internal server error"
+        });
     }
+}
 
-    }
 
+// ==================== REGISTRATION: SEND OTP ====================
 
-    
 async function handleSendOTP(req, res) {
     try {
         const email = req.body.email?.trim().toLowerCase();
@@ -90,9 +95,11 @@ async function handleSendOTP(req, res) {
             });
         }
 
-        const existingOTP = await EmailOTP.findOne({ email });
+        const existingOTP = await EmailOTP.findOne({
+            email,
+            purpose: "register"
+        });
 
-        // Allow only one OTP request per 60 seconds
         if (
             existingOTP &&
             Date.now() - existingOTP.lastSentAt.getTime() < 60 * 1000
@@ -102,20 +109,17 @@ async function handleSendOTP(req, res) {
             });
         }
 
-        // Generate a cryptographically secure 6-digit OTP
         const otp = crypto.randomInt(100000, 1000000).toString();
 
-        // Store only the hash of the OTP
         const otpHash = crypto
             .createHash("sha256")
             .update(otp)
             .digest("hex");
 
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
         const emailOTPData = {
+            purpose: "register",
             otpHash,
-            expiresAt,
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
             attempts: 0,
             lastSentAt: new Date(),
             verified: false
@@ -123,7 +127,7 @@ async function handleSendOTP(req, res) {
 
         if (existingOTP) {
             await EmailOTP.updateOne(
-                { email },
+                { _id: existingOTP._id, purpose: "register" },
                 { $set: emailOTPData }
             );
         } else {
@@ -140,7 +144,10 @@ async function handleSendOTP(req, res) {
         );
 
         if (!sent) {
-            await EmailOTP.deleteOne({ email });
+            await EmailOTP.deleteOne({
+                email,
+                purpose: "register"
+            });
 
             return res.status(500).json({
                 message: "Unable to send OTP. Please try again later."
@@ -152,7 +159,7 @@ async function handleSendOTP(req, res) {
         });
 
     } catch (error) {
-        console.error("Send OTP error:", error);
+        console.error("Registration send OTP error:", error);
 
         return res.status(500).json({
             message: "Internal server error"
@@ -160,6 +167,8 @@ async function handleSendOTP(req, res) {
     }
 }
 
+
+// ==================== REGISTRATION: VERIFY OTP ====================
 
 async function handleVerifyOTP(req, res) {
     try {
@@ -178,22 +187,33 @@ async function handleVerifyOTP(req, res) {
             });
         }
 
-        const emailOTP = await EmailOTP.findOne({ email });
+        const emailOTP = await EmailOTP.findOne({
+            email,
+            purpose: "register"
+        });
 
         if (!emailOTP) {
             return res.status(400).json({
-                message: "Please request an OTP first"
+                message: "Please request a registration OTP first"
             });
         }
 
         if (emailOTP.verified) {
-            return res.status(200).json({
-                message: "Email already verified"
+            if (emailOTP.expiresAt.getTime() > Date.now()) {
+                return res.status(200).json({
+                    message: "Email already verified"
+                });
+            }
+
+            await EmailOTP.deleteOne({ _id: emailOTP._id });
+
+            return res.status(400).json({
+                message: "OTP has expired. Please request a new one."
             });
         }
 
-        if (emailOTP.expiresAt.getTime() < Date.now()) {
-            await EmailOTP.deleteOne({ email });
+        if (emailOTP.expiresAt.getTime() <= Date.now()) {
+            await EmailOTP.deleteOne({ _id: emailOTP._id });
 
             return res.status(400).json({
                 message: "OTP has expired. Please request a new one."
@@ -201,7 +221,7 @@ async function handleVerifyOTP(req, res) {
         }
 
         if (emailOTP.attempts >= 5) {
-            await EmailOTP.deleteOne({ email });
+            await EmailOTP.deleteOne({ _id: emailOTP._id });
 
             return res.status(429).json({
                 message: "Too many incorrect attempts. Please request a new OTP."
@@ -215,6 +235,15 @@ async function handleVerifyOTP(req, res) {
 
         if (submittedHash !== emailOTP.otpHash) {
             emailOTP.attempts += 1;
+
+            if (emailOTP.attempts >= 5) {
+                await EmailOTP.deleteOne({ _id: emailOTP._id });
+
+                return res.status(429).json({
+                    message: "Too many incorrect attempts. Please request a new OTP."
+                });
+            }
+
             await emailOTP.save();
 
             return res.status(400).json({
@@ -230,7 +259,7 @@ async function handleVerifyOTP(req, res) {
         });
 
     } catch (error) {
-        console.error("Verify OTP error:", error);
+        console.error("Registration verify OTP error:", error);
 
         return res.status(500).json({
             message: "Internal server error"
@@ -239,9 +268,12 @@ async function handleVerifyOTP(req, res) {
 }
 
 
-    async function handleAdminLogin(req, res) {
+// ==================== LOGIN ====================
+
+async function handleAdminLogin(req, res) {
     try {
-        const { email, password } = req.body;
+        const email = req.body.email?.trim().toLowerCase();
+        const { password } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -249,7 +281,6 @@ async function handleVerifyOTP(req, res) {
             });
         }
 
-        // 2. Find admin by email
         const existingAdmin = await Admin.findOne({ email });
 
         if (!existingAdmin) {
@@ -258,7 +289,6 @@ async function handleVerifyOTP(req, res) {
             });
         }
 
-        // 3. Compare entered password with hashed password
         const isPasswordCorrect = await bcrypt.compare(
             password,
             existingAdmin.password
@@ -270,25 +300,32 @@ async function handleVerifyOTP(req, res) {
             });
         }
 
-        const token = jwt.sign(
-    {
-        id: existingAdmin._id,
-        email: existingAdmin.email
-    },
-    JWT_SECRET,
-    {
-        expiresIn: "1d"
-    }
-   );
+        if (!JWT_SECRET) {
+            console.error("JWT_SECRET is missing from environment variables");
 
-        // 4. Login successful
+            return res.status(500).json({
+                message: "Server configuration error"
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                id: existingAdmin._id,
+                email: existingAdmin.email
+            },
+            JWT_SECRET,
+            {
+                expiresIn: "1d"
+            }
+        );
+
         return res.status(200).json({
-            message: " Login successful",
-             token: token
+            message: "Login successful",
+            token
         });
 
     } catch (error) {
-        console.log(error);
+        console.error("Login error:", error);
 
         return res.status(500).json({
             message: "Internal server error"
@@ -297,7 +334,274 @@ async function handleVerifyOTP(req, res) {
 }
 
 
+// ==================== FORGOT PASSWORD: SEND OTP ====================
+
+async function handleForgotPasswordSendOTP(req, res) {
+    try {
+        const email = req.body.email?.trim().toLowerCase();
+
+        if (!email) {
+            return res.status(400).json({
+                message: "Email is required"
+            });
+        }
+
+        const admin = await Admin.findOne({ email });
+
+        if (!admin) {
+            return res.status(404).json({
+                message: "No account found with this email"
+            });
+        }
+
+        const existingOTP = await EmailOTP.findOne({
+            email,
+            purpose: "reset"
+        });
+
+        if (
+            existingOTP &&
+            Date.now() - existingOTP.lastSentAt.getTime() < 60 * 1000
+        ) {
+            return res.status(429).json({
+                message: "Please wait 60 seconds before requesting another OTP"
+            });
+        }
+
+        const otp = crypto.randomInt(100000, 1000000).toString();
+
+        const otpHash = crypto
+            .createHash("sha256")
+            .update(otp)
+            .digest("hex");
+
+        const otpData = {
+            purpose: "reset",
+            otpHash,
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+            attempts: 0,
+            lastSentAt: new Date(),
+            verified: false
+        };
+
+        if (existingOTP) {
+            await EmailOTP.updateOne(
+                { _id: existingOTP._id, purpose: "reset" },
+                { $set: otpData }
+            );
+        } else {
+            await EmailOTP.create({
+                email,
+                ...otpData
+            });
+        }
+
+        const sent = await sendEmail(
+            email,
+            "Attendance Maker - Password Reset OTP",
+            `Your password reset OTP is ${otp}. It is valid for 5 minutes. Do not share it with anyone.`
+        );
+
+        if (!sent) {
+            await EmailOTP.deleteOne({
+                email,
+                purpose: "reset"
+            });
+
+            return res.status(500).json({
+                message: "Unable to send OTP. Please try again later."
+            });
+        }
+
+        return res.status(200).json({
+            message: "OTP sent successfully. Please check your email."
+        });
+
+    } catch (error) {
+        console.error("Forgot password send OTP error:", error);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
 
 
- module.exports = {handleAdminRegister, handleSendOTP, handleVerifyOTP ,handleAdminLogin,};
-    
+// ==================== FORGOT PASSWORD: VERIFY OTP ====================
+
+async function handleForgotPasswordVerifyOTP(req, res) {
+    try {
+        const email = req.body.email?.trim().toLowerCase();
+        const { otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({
+                message: "Email and OTP are required"
+            });
+        }
+
+        if (!/^\d{6}$/.test(String(otp))) {
+            return res.status(400).json({
+                message: "OTP must be 6 digits"
+            });
+        }
+
+        const emailOTP = await EmailOTP.findOne({
+            email,
+            purpose: "reset",
+            verified: false
+        });
+
+        if (!emailOTP) {
+            return res.status(400).json({
+                message: "Please request a password reset OTP first"
+            });
+        }
+
+        if (emailOTP.expiresAt.getTime() <= Date.now()) {
+            await EmailOTP.deleteOne({ _id: emailOTP._id });
+
+            return res.status(400).json({
+                message: "OTP expired. Please request a new one."
+            });
+        }
+
+        if (emailOTP.attempts >= 5) {
+            await EmailOTP.deleteOne({ _id: emailOTP._id });
+
+            return res.status(429).json({
+                message: "Too many incorrect attempts. Please request a new OTP."
+            });
+        }
+
+        const submittedHash = crypto
+            .createHash("sha256")
+            .update(String(otp))
+            .digest("hex");
+
+        if (submittedHash !== emailOTP.otpHash) {
+            emailOTP.attempts += 1;
+
+            if (emailOTP.attempts >= 5) {
+                await EmailOTP.deleteOne({ _id: emailOTP._id });
+
+                return res.status(429).json({
+                    message: "Too many incorrect attempts. Please request a new OTP."
+                });
+            }
+
+            await emailOTP.save();
+
+            return res.status(400).json({
+                message: "Incorrect OTP"
+            });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        emailOTP.verified = true;
+        emailOTP.otpHash = crypto
+            .createHash("sha256")
+            .update(resetToken)
+            .digest("hex");
+
+        emailOTP.expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        await emailOTP.save();
+
+        return res.status(200).json({
+            message: "OTP verified successfully",
+            resetToken
+        });
+
+    } catch (error) {
+        console.error("Forgot password verify OTP error:", error);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
+
+
+// ==================== FORGOT PASSWORD: RESET PASSWORD ====================
+
+async function handleResetPassword(req, res) {
+    try {
+        const email = req.body.email?.trim().toLowerCase();
+        const { resetToken, newPassword } = req.body;
+
+        if (!email || !resetToken || !newPassword) {
+            return res.status(400).json({
+                message: "Email, reset token and new password are required"
+            });
+        }
+
+        if (typeof newPassword !== "string" || newPassword.length < 8) {
+            return res.status(400).json({
+                message: "Password must be at least 8 characters"
+            });
+        }
+
+        const tokenHash = crypto
+            .createHash("sha256")
+            .update(resetToken)
+            .digest("hex");
+
+        const emailOTP = await EmailOTP.findOne({
+            email,
+            purpose: "reset",
+            otpHash: tokenHash,
+            verified: true,
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!emailOTP) {
+            return res.status(400).json({
+                message: "Invalid or expired reset session. Please verify OTP again."
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        const result = await Admin.updateOne(
+            { email },
+            { $set: { password: hashedPassword } }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                message: "Account not found"
+            });
+        }
+
+        await EmailOTP.deleteOne({
+            _id: emailOTP._id,
+            purpose: "reset"
+        });
+
+        return res.status(200).json({
+            message: "Password reset successfully. Please login with your new password."
+        });
+
+    } catch (error) {
+        console.error("Reset password error:", error);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
+
+
+// ==================== EXPORTS ====================
+
+module.exports = {
+    handleAdminRegister,
+    handleSendOTP,
+    handleVerifyOTP,
+    handleAdminLogin,
+    handleForgotPasswordSendOTP,
+    handleForgotPasswordVerifyOTP,
+    handleResetPassword
+};
